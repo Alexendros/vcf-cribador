@@ -7,10 +7,27 @@ updates:
       day: monday
       time: '09:00'
       timezone: Europe/Madrid
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - dependencies
       - automated
+    ignore:
+      # Breaking changes — evaluar al subir MSRV
+      - dependency-name: nom
+        versions: [">=8"]
+      - dependency-name: toml
+        versions: [">=1"]
+      - dependency-name: chardetng
+        versions: [">=1"]
+      - dependency-name: tempfile
+        versions: [">=3.20"]
+    groups:
+      rust:
+        patterns:
+          - "*"
+        update-types:
+          - patch
+          - minor
 
   - package-ecosystem: github-actions
     directory: /
@@ -22,3 +39,11 @@ updates:
     labels:
       - dependencies
       - ci
+    ignore:
+      # MSRV debe quedarse en 1.80
+      - dependency-name: dtolnay/rust-toolchain
+        versions: [">=1.100"]
+    groups:
+      actions:
+        patterns:
+          - "*"
