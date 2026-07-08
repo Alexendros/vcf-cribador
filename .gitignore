@@ -1,0 +1,11 @@
+/target/
+**/*.rs.bk
+*.swp
+*.swo
+*~
+.DS_Store
+output/
+*.vcf
+!tests/fixtures/*.vcf
+*.tsv
+!tests/fixtures/*.tsv

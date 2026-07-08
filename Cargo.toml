@@ -1,0 +1,46 @@
+[package]
+name = "vcf-cribador"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "Criba, normaliza, clasifica y deduplica contactos VCF vCard 4.0/3.0"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/alexendros/vcf-cribador"
+
+[dependencies]
+# CLI
+clap = { version = "4.5", features = ["derive"] }
+# Parseo
+nom = "7"
+# Regex (clasificación)
+regex = "1.10"
+# CSV (audit log + export)
+csv = "1.3"
+# Logging estructurado
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+# Fuzzy matching D6
+strsim = "0.11"
+# Gestión de errores
+thiserror = "2"
+anyhow = "1"
+# Fechas
+jiff = "0.1"
+# Detección + transcodificación de codificación
+chardetng = "0.1"
+encoding_rs = "0.8"
+# Configuración externa
+toml = "0.8"
+# Export JSON
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
+opt-level = 3
