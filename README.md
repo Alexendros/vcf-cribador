@@ -11,8 +11,8 @@
 
 **Criba · Normaliza · Clasifica · Deduplica**
 
-[![CI](https://github.com/alexendros/vcf-cribador/actions/workflows/ci.yml/badge.svg)](https://github.com/alexendros/vcf-cribador/actions/workflows/ci.yml)
-[![Security Audit](https://github.com/alexendros/vcf-cribador/actions/workflows/audit.yml/badge.svg)](https://github.com/alexendros/vcf-cribador/actions/workflows/audit.yml)
+[![CI](https://github.com/Alexendros/vcf-cribador/actions/workflows/ci.yml/badge.svg)](https://github.com/Alexendros/vcf-cribador/actions/workflows/ci.yml)
+[![Security Audit](https://github.com/Alexendros/vcf-cribador/actions/workflows/audit.yml/badge.svg)](https://github.com/Alexendros/vcf-cribador/actions/workflows/audit.yml)
 [![Crates.io](https://img.shields.io/crates/v/vcf-cribador?color=orange)](https://crates.io/crates/vcf-cribador)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
 [![MSRV](https://img.shields.io/badge/rustc-1.80+-blue.svg)](https://blog.rust-lang.org/2024/07/25/Rust-1.80.0.html)

@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use tracing_subscriber::EnvFilter;
 use vcf_cribador::application::audit;
 use vcf_cribador::application::cribar;
@@ -54,6 +54,11 @@ fn main() -> anyhow::Result<()> {
                 }
                 _ => vcf_cribador::infrastructure::csv_writer::export_csv(&contacts, &output)?,
             }
+        }
+        Command::Completions { shell } => {
+            let mut cmd = Cli::command();
+            let name = cmd.get_name().to_string();
+            clap_complete::generate(shell, &mut cmd, name, &mut std::io::stdout());
         }
     }
 

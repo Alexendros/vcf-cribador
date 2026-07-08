@@ -75,4 +75,11 @@ pub enum Command {
         #[arg(short = 'f', long, default_value = "csv")]
         format: String,
     },
+
+    /// Genera script de autocompletado para shell
+    Completions {
+        /// Shell: bash, zsh, fish
+        #[arg(value_enum)]
+        shell: clap_complete::Shell,
+    },
 }
