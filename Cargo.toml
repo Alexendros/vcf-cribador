@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/alexendros/vcf-cribador"
 homepage = "https://github.com/alexendros/vcf-cribador"
 documentation = "https://docs.rs/vcf-cribador"
-keywords = ["vcf", "vcard", "contacts", "cleaner", "deduplication", "normalization"]
+keywords = ["vcf", "vcard", "contacts", "cli", "deduplication"]
 categories = ["command-line-utilities", "text-processing"]
 
 [dependencies]
