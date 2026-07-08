@@ -1,51 +1,172 @@
-# vcf-cribador
+<!--
+  ┌─────────────────────────────────────────────────────┐
+  │  vcf-cribador                                      │
+  │  Criba, normaliza, clasifica y deduplica VCF       │
+  └─────────────────────────────────────────────────────┘
+-->
 
-Criba, normaliza, clasifica y deduplica contactos VCF vCard 4.0/3.0 exportados desde ProtonMail, Google Contacts y Apple iCloud.
+<div align="center">
 
-## Instalación
+# 📇 vcf-cribador
+
+**Criba · Normaliza · Clasifica · Deduplica**
+
+[![CI](https://github.com/alexendros/vcf-cribador/actions/workflows/ci.yml/badge.svg)](https://github.com/alexendros/vcf-cribador/actions/workflows/ci.yml)
+[![Security Audit](https://github.com/alexendros/vcf-cribador/actions/workflows/audit.yml/badge.svg)](https://github.com/alexendros/vcf-cribador/actions/workflows/audit.yml)
+[![Crates.io](https://img.shields.io/crates/v/vcf-cribador?color=orange)](https://crates.io/crates/vcf-cribador)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
+[![MSRV](https://img.shields.io/badge/rustc-1.80+-blue.svg)](https://blog.rust-lang.org/2024/07/25/Rust-1.80.0.html)
+[![LoC](https://img.shields.io/badge/code-4.5k_lines-brightgreen)](#)
+
+</div>
+
+---
+
+Limpia tus contactos VCF exportados desde **ProtonMail**, **Google Contacts** o **Apple iCloud** aplicando reglas deterministas de clasificación (C2-C6) y eliminación (E1-E3), deduplicación con cierre transitivo, y normalización de nombres y teléfonos.
+
+## 🚀 Quick start
 
 ```bash
-cargo install --path .
-```
+# Instalar
+cargo install vcf-cribador
 
-## Uso
+# Cribar un archivo (conservados → limpio.vcf, trazabilidad → auditoría.tsv)
+vcf-cribador cribar mis-contactos.vcf -o limpio.vcf -a auditoria.tsv
 
-```bash
-# Pipeline completo
-vcf-cribador cribar contacts.vcf -o limpio.vcf -a audit.tsv
+# Solo auditar sin modificar
+vcf-cribador audit mis-contactos.vcf -o auditoria.tsv
 
-# Solo auditar (sin modificar)
-vcf-cribador audit contacts.vcf -o audit.tsv
-
-# Estadísticas post-cribado
+# Estadísticas
 vcf-cribador stats limpio.vcf
+vcf-cribador stats limpio.vcf -f json
+vcf-cribador stats limpio.vcf -f markdown
 
-# Exportar a CSV/JSON
-vcf-cribador export limpio.vcf -o contacts.csv -f csv
+# Exportar a CSV o JSON
+vcf-cribador export limpio.vcf -o contactos.csv
+vcf-cribador export limpio.vcf -o contactos.json -f json
 ```
 
-## Arquitectura
+## ⚙️ Configuración
+
+Opcional: crea un archivo TOML para personalizar el cribado.
+
+```toml
+# cribador.toml
+[cribado]
+prefijo_pais = "+34"         # prefijo telefónico por defecto
+replace = false              # false = añade a los defaults, true = reemplaza
+conservar_dominios = [       # dominios de email que NUNCA se eliminan
+    "@gva.es",
+    "@justicia.es"
+]
+e2_keywords = [              # palabras clave adicionales para detección de spam
+    "viagra",
+    "casino"
+]
+```
+
+```bash
+vcf-cribador cribar contactos.vcf --config cribador.toml
+```
+
+## 🔄 Pipeline
 
 ```
-domain/          # Reglas de negocio puras (Contact, ScreeningDecision, Dedup)
-application/     # Casos de uso (Cribar, Audit, Stats, Export)
-infrastructure/  # Adaptadores (parser RFC, writer VCF, encoding, CSV/JSON/TSV)
-interfaces/      # CLI (Clap)
+  VCF  ──→  Parse   ──→  Normalize  ──→  Classify  ──→  Screen  ──→  Dedup  ──→  Write
+ 4.0/3.0    unfold      FN · TEL · ORG    16 categorías     C2-C6          Union-Find     VCF
+            unescape     E.164 · N7        N1 + N2          E1-E3          cierre         TSV
+            grouped                                                     transitivo      CSV/JSON
 ```
 
-Ver [`docs/architecture.md`](docs/architecture.md) para el diseño completo.
+| Etapa | Descripción |
+|-------|-------------|
+| **Parse** | RFC 6350 §3.2 (unfold), §3.4 (escape). Propiedades agrupadas (`ITEM1.EMAIL`). Compatibilidad v3 → v4. |
+| **Normalize** | N1-N7: capitalización de nombres, extracción de títulos, cargos, partículas. T1-T4: E.164. |
+| **Classify** | 16 categorías N2: JUD, NOT, COL, FIS, ICAV, CRYPTO, FINTEC, AUT, EST, LOC, etc. |
+| **Screen** | C2-C6: conservar por categoría. E1-E3: eliminar huérfanos, spam, email-only. |
+| **Dedup** | Union-Find con cierre transitivo. Coincidencia por TEL exacto, EMAIL fuzzy, FN fuzzy. |
+| **Write** | VCF 4.0 con folding 75 octetos. TSV con 11 columnas de trazabilidad. CSV/JSON export. |
 
-## Documentación
+## 📊 Ejemplo real
+
+```
+$ vcf-cribador cribar protonContacts-2025-07-07.vcf -o limpio.vcf -a audit.tsv
+
+=== Estadísticas de cribado ===
+Total entrada:   475
+  Conservados:   221
+  Eliminados:    254
+  Fusionados:    0
+  Cuarentena:    0
+  Needs Review:  1
+
+Por categoría:
+  FIN-CRYPTO:  3    FIN-FINTEC:  5    INST-AUT:  7
+  PROF-JUD:    3    PROF-NOT:    2    PROF-COL:  4
+  TEC-COM:     3    SALUD-SOC:   2    ...
+```
+
+## 🏗️ Arquitectura
+
+```
+src/
+├── domain/           Reglas de negocio puras
+│   ├── contact.rs    Entidad Contact, StructuredName, CategorySet
+│   ├── screening.rs  Motor de cribado C2-E3, DecisionTrace
+│   ├── classification.rs  Clasificación N1+N2 por regex
+│   ├── normalization.rs   FN/TEL/ORG normalization
+│   ├── identity.rs        Dedup Union-Find
+│   └── rules.rs           Reglas de clasificación
+├── application/     Casos de uso
+│   ├── cribar.rs    Pipeline completo
+│   ├── audit.rs     Auditoría standalone
+│   └── stats.rs     Estadísticas (texto/JSON/Markdown)
+├── infrastructure/  Adaptadores
+│   ├── parser.rs    VCF parser (nom)
+│   ├── writer.rs    VCF writer RFC 6350
+│   ├── tsv_writer.rs   Auditoría TSV
+│   ├── csv_writer.rs   Export CSV
+│   ├── json_writer.rs  Export JSON
+│   ├── encoding.rs  ISO-8859-1 → UTF-8
+│   ├── source.rs    Detección Proton/Google/Apple
+│   ├── v3_compat.rs vCard 3.0 → 4.0
+│   └── config.rs    Configuración TOML
+└── interfaces/      CLI (clap derive)
+```
+
+→ [`docs/architecture.md`](docs/architecture.md)
+
+## 📚 Documentación
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`docs/spec.md`](docs/spec.md) | Objetivos, invariantes, criterios de aceptación |
-| [`docs/domain.md`](docs/domain.md) | Lenguaje ubicuo, entidades, value objects, reglas |
-| [`docs/architecture.md`](docs/architecture.md) | Clean Architecture, bounded contexts, capas |
-| [`docs/events.md`](docs/events.md) | Comandos, eventos, excepciones |
+| [`docs/spec.md`](docs/spec.md) | Especificación, invariantes, criterios de aceptación |
+| [`docs/domain.md`](docs/domain.md) | Lenguaje ubicuo, entidades, rules |
+| [`docs/architecture.md`](docs/architecture.md) | Clean Architecture, capas |
+| [`docs/implementation-guide.md`](docs/implementation-guide.md) | Guía de implementación por fases |
 | [`docs/test-plan.md`](docs/test-plan.md) | Estrategia de testing, fixtures |
-| [`docs/adr/README.md`](docs/adr/README.md) | Architecture Decision Records |
+| [`docs/events.md`](docs/events.md) | Comandos, eventos |
+| [`docs/adr/`](docs/adr/) | Architecture Decision Records |
 
-## Licencia
+## 🧪 Desarrollo
 
-MIT OR Apache-2.0
+```bash
+git clone https://github.com/alexendros/vcf-cribador.git
+cd vcf-cribador
+
+make hooks     # instalar pre-commit hooks
+make ci        # fmt + clippy + test + doc
+make release   # build release
+```
+
+Ver [`CONTRIBUTING.md`](CONTRIBUTING.md) para la guía de contribución.
+
+## 🔒 Seguridad
+
+Reporta vulnerabilidades de forma privada. Ver [`SECURITY.md`](SECURITY.md).
+
+Ejecutamos `cargo audit` semanalmente vía GitHub Actions.
+
+## 📄 Licencia
+
+MIT OR Apache-2.0 · Ver [`LICENSE`](LICENSE)

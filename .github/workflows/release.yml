@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Release ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: cargo build --release --locked
+
+      - name: Strip binary
+        run: strip target/release/vcf-cribador
+
+      - name: Generate SHA256
+        run: |
+          cd target/release
+          sha256sum vcf-cribador > vcf-cribador.sha256
+
+      - name: Extract changelog
+        id: changelog
+        run: |
+          awk '/^## \[/{c++} c==1' CHANGELOG.md | head -50 > /tmp/release_notes.md
+          echo "notes_path=/tmp/release_notes.md" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: ${{ steps.changelog.outputs.notes_path }}
+          files: |
+            target/release/vcf-cribador
+            target/release/vcf-cribador.sha256
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
+
+      - name: Publish to crates.io
+        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
+        if: ${{ !contains(github.ref_name, '-rc') && !contains(github.ref_name, '-alpha') && !contains(github.ref_name, '-beta') }}

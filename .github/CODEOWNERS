@@ -1,0 +1,11 @@
+# CODEOWNERS — los mantenedores revisan automáticamente los PRs
+
+# Mantenedor principal
+* @alexendros
+
+# CI/CD
+.github/ @alexendros
+
+# Documentación
+docs/ @alexendros
+*.md @alexendros

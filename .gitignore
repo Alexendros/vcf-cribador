@@ -9,3 +9,5 @@ output/
 !tests/fixtures/*.vcf
 *.tsv
 !tests/fixtures/*.tsv
+
+# Makefile no trackea el binario release
