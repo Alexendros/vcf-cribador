@@ -47,9 +47,9 @@
 | Test | Descripción |
 |------|-------------|
 | `test_juzgado_matched` | ORG="Juzgado Instrucción 9" → contiene "PROF-JUD" |
-| `test_gva_domain_matched` | EMAIL="@gva.es" → contiene "INST-AUT" |
-| `test_multiple_categories` | ORG="Juzgado" + EMAIL="@gva.es" → ["PROF","PROF-JUD","INST","INST-AUT"] |
-| `test_crypto_matched` | ORG="Bybit Support" → contiene "FIN-CRYPTO" |
+| `test_domain_matched` | EMAIL en dominio institucional → categoría correcta |
+| `test_multiple_categories` | ORG + EMAIL combinados → múltiples categorías |
+| `test_crypto_matched` | ORG financiero → contiene "FIN-CRYPTO" |
 | `test_no_match_defaults` | Sin ORG ni patrones → N1 por defecto |
 | `test_all_rules_compile` | Todos los regex de reglas estándar compilan sin error |
 
@@ -129,20 +129,20 @@
 
 | Test | Descripción | Archivo de prueba |
 |------|-------------|-------------------|
-| `test_cribar_proton_real` | Pipeline completo con archivo ProtonMail | `protonContacts-2026-07-07.vcf` |
+| `test_cribar_proton_real` | Pipeline completo con archivo ProtonMail | `sample-contacts-2026-07-07.vcf` |
 | `test_cribar_google_v3` | Pipeline con VCF Google vCard 3.0 | `fixtures/google_sample.vcf` |
 | `test_cribar_apple_v3` | Pipeline con VCF Apple vCard 3.0 | `fixtures/apple_sample.vcf` |
 | `test_cribar_dry_run` | `--dry-run` no crea archivos, reporta en stdout | Cualquier VCF |
-| `test_pipeline_completo` | cribar → stats → verificar criterios §spec | protonContacts |
+| `test_pipeline_completo` | cribar → stats → verificar criterios §spec | sample-contacts |
 | `test_archivo_vacio` | VCF sin VCARDs → error controlado | `fixtures/empty.vcf` |
 | `test_archivo_malformado` | Texto no VCF → error descriptivo | `fixtures/malformed.txt` |
 | `test_encoding_iso` | VCF ISO-8859-1 → transcodifica y procesa | `fixtures/iso_sample.vcf` |
 | `test_config_custom_rules` | `--config custom.toml` → reglas extra aplicadas | `fixtures/custom.toml` |
-| `test_export_csv_roundtrip` | cribar → export csv → columnas correctas | protonContacts |
-| `test_export_json_roundtrip` | cribar → export json → JSON válido | protonContacts |
-| `test_dedup_transitivo_real` | Verificar fusión transitiva en datos reales | protonContacts |
-| `test_stats_accuracy` | stats refleja conteos reales de salida | protonContacts |
-| `test_audit_tsv_completeness` | audit.tsv tiene una fila por contacto | protonContacts |
+| `test_export_csv_roundtrip` | cribar → export csv → columnas correctas | sample-contacts |
+| `test_export_json_roundtrip` | cribar → export json → JSON válido | sample-contacts |
+| `test_dedup_transitivo_real` | Verificar fusión transitiva en datos reales | sample-contacts |
+| `test_stats_accuracy` | stats refleja conteos reales de salida | sample-contacts |
+| `test_audit_tsv_completeness` | audit.tsv tiene una fila por contacto | sample-contacts |
 
 ---
 

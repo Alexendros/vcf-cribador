@@ -6,8 +6,7 @@
 .DS_Store
 output/
 *.vcf
-!tests/fixtures/*.vcf
+!tests/fixtures/sample-contacts.vcf
+!tests/fixtures/google_*.vcf
 *.tsv
 !tests/fixtures/*.tsv
-
-# Makefile no trackea el binario release

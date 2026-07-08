@@ -1,0 +1,101 @@
+BEGIN:VCARD
+VERSION:4.0
+FN:María García López
+N:García;María;;;
+ORG:Juzgado Instrucción 3
+TEL;TYPE=work:+34600111222
+EMAIL;TYPE=work:maria.garcia@example.org
+UID:uid-001
+NOTE:Contacto de ejemplo para tests
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Carlos Ruiz Pérez
+N:Ruiz;Carlos;;;
+ORG:Departamento de Salud
+TEL;TYPE=cell:+34600222333
+EMAIL;TYPE=home:carlos.ruiz@example.com
+UID:uid-002
+NOTE:Contacto de ejemplo para tests
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Ana Martín Fernández
+N:Martín;Ana;;;
+TEL;TYPE=cell:+34600333444
+EMAIL;TYPE=home:ana.martin@example.com
+UID:uid-003
+NOTE:Contacto de ejemplo para tests
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Pedro Sánchez Ruiz
+N:Sánchez;Pedro;;;
+ORG:Ayuntamiento de Toledo
+TEL;TYPE=work:+34600444555
+EMAIL;TYPE=work:pedro.sanchez@admin.gob.es
+UID:uid-004
+NOTE:Contacto de ejemplo para tests
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Luis García
+N:García;Luis;;;
+TEL;TYPE=cell:+34600111222
+EMAIL;TYPE=home:luis.garcia@personal.com
+UID:uid-004
+NOTE:Este es un duplicado de uid-004 (mismo UID)
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:support@crypto-exchange.com
+EMAIL:support@crypto-exchange.com
+UID:uid-005
+NOTE:Contacto email-only que debe ser clasificado
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Javier López Martínez
+N:López;Javier;;;
+ORG:ICAV Turno de Oficio
+TEL;TYPE=cell:+34600555666
+EMAIL;TYPE=work:javier.lopez@icav.org
+UID:uid-006
+NOTE:Abogado ICAV para tests de clasificación
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Fiscalía Provincial
+N:Fiscalía;;Provincial;;
+TEL;TYPE=work:+34600666777
+EMAIL;TYPE=work:fiscalia@example.org
+UID:uid-007
+NOTE:Fiscalía para tests de clasificación
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Crypto Exchange Support
+EMAIL:support@exchange-crypto.io
+UID:uid-008
+NOTE:Contacto de exchange crypto para tests
+REV:20250101T000000Z
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Banco Digital S.A.
+N:Digital;;Banco;S.A.;
+ORG:Banco Digital
+TEL;TYPE=work:+34600777888
+EMAIL;TYPE=work:info@digitalbank.com
+UID:uid-009
+NOTE:Entidad bancaria para tests de clasificación
+REV:20250101T000000Z
+END:VCARD

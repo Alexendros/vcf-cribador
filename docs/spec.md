@@ -47,7 +47,7 @@
 
 ### Fase 1 — Parseo
 
-- [ ] Archivo ProtonMail vCard 4.0 (~285 KB, ~145 contactos): parseado sin errores, sin panics
+- [ ] Archivo ProtonMail vCard 4.0 (~2 KB sintético, ~145 contactos): parseado sin errores, sin panics
 - [ ] Archivo Google Contacts vCard 3.0 de muestra: parseado sin errores
 - [ ] Archivo Apple iCloud vCard 3.0 de muestra: parseado sin errores
 - [ ] Archivo vacío (0 contactos): error controlado, no panic
@@ -78,9 +78,9 @@
 ### Fase 4 — Clasificación
 
 - [ ] Contacto con ORG `Juzgado Instrucción 9` → categorías `PROF,PROF-JUD`
-- [ ] Contacto con EMAIL `@gva.es` → categorías `INST,INST-AUT`
-- [ ] Contacto con ORG `Bybit Support` → categorías `FIN,FIN-CRYPTO`
-- [ ] Contacto combinado (juzgado + @gva.es) → `PROF,PROF-JUD,INST,INST-AUT`
+- [ ] Contacto con EMAIL `@example.org` → categorías `INST,INST-AUT`
+- [ ] Contacto con ORG `Exchange Support` → categorías `FIN,FIN-CRYPTO`
+- [ ] Contacto combinado (juzgado + @example.org) → `PROF,PROF-JUD,INST,INST-AUT`
 - [ ] Contacto sin patrones → categoría N1 inferida por defecto
 
 ### Fase 5 — Deduplicación
@@ -111,6 +111,6 @@
 |---------|----------|
 | Cobertura de tests unitarios | ≥ 80% |
 | Tests de integración | Mínimo 10 escenarios |
-| Tiempo de ejecución (archivo ~285 KB) | < 1 segundo |
+| Tiempo de ejecución (archivo ~2 KB sintético) | < 1 segundo |
 | Binario release | < 8 MB |
 | Sin panics en inputs malformados | 100% |

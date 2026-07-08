@@ -31,5 +31,5 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Release automatizado con binario + SHA256
 - 132 tests unitarios y de integración
 
-[Unreleased]: https://github.com/alexendros/vcf-cribador/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/alexendros/vcf-cribador/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Alexendros/vcf-cribador/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Alexendros/vcf-cribador/releases/tag/v0.1.0

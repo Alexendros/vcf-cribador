@@ -99,7 +99,7 @@ Tareas:
 - [ ] encoding_rs para transcodificar ISO-8859-1/Windows-1252 → UTF-8
 - [ ] Tests: `test_utf8_passthrough`, `test_iso_to_utf8`
 
-**Criterio de aceptación:** `cargo test` con el archivo `protonContacts-2026-07-07.vcf` → parseado sin errores, >100 contactos.
+**Criterio de aceptación:** `cargo test` con el archivo `sample-contacts.vcf` → parseado sin errores, >5 contactos.
 
 ---
 
@@ -272,7 +272,7 @@ Tareas:
 - [ ] `cargo test` → todos pasando (≥60 unitarios + integración)
 - [ ] `cargo clippy` → sin warnings
 - [ ] `cargo fmt` → formateado
-- [ ] Probar con `protonContacts-2026-07-07.vcf` real
+- [ ] Probar con `sample-contacts.vcf` real
 - [ ] Git tag `v0.1.0`
 
 ---

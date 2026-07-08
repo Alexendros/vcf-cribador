@@ -56,12 +56,12 @@ Opcional: crea un archivo TOML para personalizar el cribado.
 prefijo_pais = "+34"         # prefijo telefónico por defecto
 replace = false              # false = añade a los defaults, true = reemplaza
 conservar_dominios = [       # dominios de email que NUNCA se eliminan
-    "@gva.es",
-    "@justicia.es"
+    "@example.org",
+    "@admin.gob.es"
 ]
 e2_keywords = [              # palabras clave adicionales para detección de spam
-    "viagra",
-    "casino"
+    "pharma",
+    "jackpot"
 ]
 ```
 
@@ -90,7 +90,7 @@ vcf-cribador cribar contactos.vcf --config cribador.toml
 ## 📊 Ejemplo real
 
 ```
-$ vcf-cribador cribar protonContacts-2025-07-07.vcf -o limpio.vcf -a audit.tsv
+$ vcf-cribador cribar contacts-2025.vcf -o limpio.vcf -a audit.tsv
 
 === Estadísticas de cribado ===
 Total entrada:   475
@@ -151,7 +151,7 @@ src/
 ## 🧪 Desarrollo
 
 ```bash
-git clone https://github.com/alexendros/vcf-cribador.git
+git clone https://github.com/Alexendros/vcf-cribador.git
 cd vcf-cribador
 
 make hooks     # instalar pre-commit hooks
