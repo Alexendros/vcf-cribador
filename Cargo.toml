@@ -30,7 +30,7 @@ strsim = "0.11"
 thiserror = "2"
 anyhow = "1"
 # Fechas
-jiff = "0.1"
+jiff = "0.2"
 # Detección + transcodificación de codificación
 chardetng = "0.1"
 encoding_rs = "0.8"
