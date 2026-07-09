@@ -14,7 +14,7 @@ env:
 jobs:
   check:
     name: Check (stable)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -23,7 +23,7 @@ jobs:
 
   msrv:
     name: Check (MSRV 1.80)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@1.80
@@ -32,7 +32,7 @@ jobs:
 
   fmt:
     name: Format
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -42,7 +42,7 @@ jobs:
 
   clippy:
     name: Clippy
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -53,7 +53,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -62,9 +62,26 @@ jobs:
 
   doc:
     name: Doc
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo doc --no-deps --document-private-items
+
+  coverage:
+    name: Coverage
+    runs-on: [self-hosted, ts]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-tarpaulin
+        uses: taiki-e/install-action@cargo-tarpaulin
+      - name: Generate coverage
+        run: cargo tarpaulin --out Lcov --output-dir coverage
+      - name: Upload to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: coverage/lcov.info
