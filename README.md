@@ -1,30 +1,17 @@
-<!--
-  ┌─────────────────────────────────────────────────────┐
-  │  vcf-cribador                                      │
-  │  Criba, normaliza, clasifica y deduplica VCF       │
-  └─────────────────────────────────────────────────────┘
--->
-
-<div align="center">
-
-# 📇 vcf-cribador
-
-**Criba · Normaliza · Clasifica · Deduplica**
+# vcf-cribador
 
 [![CI](https://github.com/Alexendros/vcf-cribador/actions/workflows/ci.yml/badge.svg)](https://github.com/Alexendros/vcf-cribador/actions/workflows/ci.yml)
+[![Coverage](https://coveralls.io/repos/github/Alexendros/vcf-cribador/badge.svg)](https://coveralls.io/github/Alexendros/vcf-cribador)
 [![Security Audit](https://github.com/Alexendros/vcf-cribador/actions/workflows/audit.yml/badge.svg)](https://github.com/Alexendros/vcf-cribador/actions/workflows/audit.yml)
 [![Crates.io](https://img.shields.io/crates/v/vcf-cribador?color=orange)](https://crates.io/crates/vcf-cribador)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
 [![MSRV](https://img.shields.io/badge/rustc-1.80+-blue.svg)](https://blog.rust-lang.org/2024/07/25/Rust-1.80.0.html)
-[![LoC](https://img.shields.io/badge/code-4.5k_lines-brightgreen)](#)
 
-</div>
-
----
+Criba, normaliza, clasifica y deduplica contactos VCF exportados desde ProtonMail, Google Contacts o Apple iCloud.
 
 Limpia tus contactos VCF exportados desde **ProtonMail**, **Google Contacts** o **Apple iCloud** aplicando reglas deterministas de clasificación (C2-C6) y eliminación (E1-E3), deduplicación con cierre transitivo, y normalización de nombres y teléfonos.
 
-## 🚀 Quick start
+## Quick start
 
 ```bash
 # Instalar
@@ -46,7 +33,7 @@ vcf-cribador export limpio.vcf -o contactos.csv
 vcf-cribador export limpio.vcf -o contactos.json -f json
 ```
 
-## ⚙️ Configuración
+## Configuración
 
 Opcional: crea un archivo TOML para personalizar el cribado.
 
@@ -69,7 +56,7 @@ e2_keywords = [              # palabras clave adicionales para detección de spa
 vcf-cribador cribar contactos.vcf --config cribador.toml
 ```
 
-## 🔄 Pipeline
+## Pipeline
 
 ```
   VCF  ──→  Parse   ──→  Normalize  ──→  Classify  ──→  Screen  ──→  Dedup  ──→  Write
@@ -78,16 +65,16 @@ vcf-cribador cribar contactos.vcf --config cribador.toml
             grouped                                                     transitivo      CSV/JSON
 ```
 
-| Etapa | Descripción |
-|-------|-------------|
-| **Parse** | RFC 6350 §3.2 (unfold), §3.4 (escape). Propiedades agrupadas (`ITEM1.EMAIL`). Compatibilidad v3 → v4. |
-| **Normalize** | N1-N7: capitalización de nombres, extracción de títulos, cargos, partículas. T1-T4: E.164. |
-| **Classify** | 16 categorías N2: JUD, NOT, COL, FIS, ICAV, CRYPTO, FINTEC, AUT, EST, LOC, etc. |
-| **Screen** | C2-C6: conservar por categoría. E1-E3: eliminar huérfanos, spam, email-only. |
-| **Dedup** | Union-Find con cierre transitivo. Coincidencia por TEL exacto, EMAIL fuzzy, FN fuzzy. |
-| **Write** | VCF 4.0 con folding 75 octetos. TSV con 11 columnas de trazabilidad. CSV/JSON export. |
+| Etapa         | Descripción                                                                                           |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| **Parse**     | RFC 6350 §3.2 (unfold), §3.4 (escape). Propiedades agrupadas (`ITEM1.EMAIL`). Compatibilidad v3 → v4. |
+| **Normalize** | N1-N7: capitalización de nombres, extracción de títulos, cargos, partículas. T1-T4: E.164.            |
+| **Classify**  | 16 categorías N2: JUD, NOT, COL, FIS, ICAV, CRYPTO, FINTEC, AUT, EST, LOC, etc.                       |
+| **Screen**    | C2-C6: conservar por categoría. E1-E3: eliminar huérfanos, spam, email-only.                          |
+| **Dedup**     | Union-Find con cierre transitivo. Coincidencia por TEL exacto, EMAIL fuzzy, FN fuzzy.                 |
+| **Write**     | VCF 4.0 con folding 75 octetos. TSV con 11 columnas de trazabilidad. CSV/JSON export.                 |
 
-## 📊 Ejemplo real
+## Ejemplo real
 
 ```
 $ vcf-cribador cribar contacts-2025.vcf -o limpio.vcf -a audit.tsv
@@ -106,7 +93,7 @@ Por categoría:
   TEC-COM:     3    SALUD-SOC:   2    ...
 ```
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ```
 src/
@@ -136,19 +123,19 @@ src/
 
 → [`docs/architecture.md`](docs/architecture.md)
 
-## 📚 Documentación
+## Documentación
 
-| Documento | Contenido |
-|-----------|-----------|
-| [`docs/spec.md`](docs/spec.md) | Especificación, invariantes, criterios de aceptación |
-| [`docs/domain.md`](docs/domain.md) | Lenguaje ubicuo, entidades, rules |
-| [`docs/architecture.md`](docs/architecture.md) | Clean Architecture, capas |
-| [`docs/implementation-guide.md`](docs/implementation-guide.md) | Guía de implementación por fases |
-| [`docs/test-plan.md`](docs/test-plan.md) | Estrategia de testing, fixtures |
-| [`docs/events.md`](docs/events.md) | Comandos, eventos |
-| [`docs/adr/`](docs/adr/) | Architecture Decision Records |
+| Documento                                                      | Contenido                                            |
+| -------------------------------------------------------------- | ---------------------------------------------------- |
+| [`docs/spec.md`](docs/spec.md)                                 | Especificación, invariantes, criterios de aceptación |
+| [`docs/domain.md`](docs/domain.md)                             | Lenguaje ubicuo, entidades, rules                    |
+| [`docs/architecture.md`](docs/architecture.md)                 | Clean Architecture, capas                            |
+| [`docs/implementation-guide.md`](docs/implementation-guide.md) | Guía de implementación por fases                     |
+| [`docs/test-plan.md`](docs/test-plan.md)                       | Estrategia de testing, fixtures                      |
+| [`docs/events.md`](docs/events.md)                             | Comandos, eventos                                    |
+| [`docs/adr/`](docs/adr/)                                       | Architecture Decision Records                        |
 
-## 🧪 Desarrollo
+## Desarrollo
 
 ```bash
 git clone https://github.com/Alexendros/vcf-cribador.git
@@ -161,12 +148,12 @@ make release   # build release
 
 Ver [`CONTRIBUTING.md`](CONTRIBUTING.md) para la guía de contribución.
 
-## 🔒 Seguridad
+## Seguridad
 
 Reporta vulnerabilidades de forma privada. Ver [`SECURITY.md`](SECURITY.md).
 
 Ejecutamos `cargo audit` semanalmente vía GitHub Actions.
 
-## 📄 Licencia
+## Licencia
 
 MIT OR Apache-2.0 · Ver [`LICENSE`](LICENSE)
