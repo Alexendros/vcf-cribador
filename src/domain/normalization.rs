@@ -138,7 +138,7 @@ fn normalize_capitalization(s: &str) -> String {
 /// T1+T4: normaliza un número de teléfono a E.164.
 ///
 /// Retorna un Tel con `normalized = true` si se pudo normalizar.
-pub fn normalize_tel(value: &str, prefijo_pais: &str) -> Tel {
+pub fn normalize_tel(value: &str, prefijo_pais: &str, tel_type: TelType) -> Tel {
     // Limpiar: eliminar espacios, guiones, puntos, paréntesis
     let cleaned: String = value
         .chars()
@@ -151,7 +151,7 @@ pub fn normalize_tel(value: &str, prefijo_pais: &str) -> Tel {
         if !digits_only.is_empty() {
             return Tel {
                 value: format!("+{}", digits_only),
-                tel_type: TelType::Other,
+                tel_type,
                 normalized: true,
             };
         }
@@ -163,7 +163,7 @@ pub fn normalize_tel(value: &str, prefijo_pais: &str) -> Tel {
         if !digits.is_empty() {
             return Tel {
                 value: format!("+{}", digits),
-                tel_type: TelType::Other,
+                tel_type,
                 normalized: true,
             };
         }
@@ -173,7 +173,7 @@ pub fn normalize_tel(value: &str, prefijo_pais: &str) -> Tel {
     if !cleaned.chars().all(|c| c.is_ascii_digit()) {
         return Tel {
             value: value.to_string(),
-            tel_type: TelType::Other,
+            tel_type,
             normalized: false,
         };
     }
@@ -189,7 +189,7 @@ pub fn normalize_tel(value: &str, prefijo_pais: &str) -> Tel {
         let prefix = prefijo_pais.trim_start_matches('+');
         return Tel {
             value: format!("+{}{}", prefix, cleaned),
-            tel_type: TelType::Other,
+            tel_type,
             normalized: true,
         };
     }
@@ -199,7 +199,7 @@ pub fn normalize_tel(value: &str, prefijo_pais: &str) -> Tel {
         let prefix = prefijo_pais.trim_start_matches('+');
         return Tel {
             value: format!("+{}{}", prefix, cleaned),
-            tel_type: TelType::Other,
+            tel_type,
             normalized: true,
         };
     }
@@ -207,7 +207,7 @@ pub fn normalize_tel(value: &str, prefijo_pais: &str) -> Tel {
     // Fallback: no se pudo normalizar
     Tel {
         value: value.to_string(),
-        tel_type: TelType::Other,
+        tel_type,
         normalized: false,
     }
 }
@@ -309,42 +309,42 @@ mod tests {
 
     #[test]
     fn test_normalize_tel_e164_spanish() {
-        let tel = normalize_tel("612345678", "+34");
+        let tel = normalize_tel("612345678", "+34", TelType::Cell);
         assert_eq!(tel.value, "+34612345678");
         assert!(tel.normalized);
     }
 
     #[test]
     fn test_normalize_tel_already_e164() {
-        let tel = normalize_tel("+34612345678", "+34");
+        let tel = normalize_tel("+34612345678", "+34", TelType::Cell);
         assert_eq!(tel.value, "+34612345678");
         assert!(tel.normalized);
     }
 
     #[test]
     fn test_normalize_tel_with_spaces_and_dashes() {
-        let tel = normalize_tel("+34 612-345-678", "+34");
+        let tel = normalize_tel("+34 612-345-678", "+34", TelType::Cell);
         assert_eq!(tel.value, "+34612345678");
         assert!(tel.normalized);
     }
 
     #[test]
     fn test_normalize_tel_double_zero_prefix() {
-        let tel = normalize_tel("0034612345678", "+34");
+        let tel = normalize_tel("0034612345678", "+34", TelType::Cell);
         assert_eq!(tel.value, "+34612345678");
         assert!(tel.normalized);
     }
 
     #[test]
     fn test_normalize_tel_non_numeric() {
-        let tel = normalize_tel("AEAT", "+34");
+        let tel = normalize_tel("AEAT", "+34", TelType::Cell);
         assert_eq!(tel.value, "AEAT");
         assert!(!tel.normalized);
     }
 
     #[test]
     fn test_normalize_tel_uk_number() {
-        let tel = normalize_tel("+447911123456", "+34");
+        let tel = normalize_tel("+447911123456", "+34", TelType::Cell);
         assert_eq!(tel.value, "+447911123456");
         assert!(tel.normalized);
     }

@@ -106,6 +106,11 @@ fn write_one_contact(
         write_prop(buf, &format_email(email))?;
     }
 
+    // ADR
+    for addr in &contact.addresses {
+        write_prop(buf, &format_address(addr))?;
+    }
+
     // TITLE
     if let Some(ref title) = contact.title {
         write_prop(buf, &format!("TITLE:{}", escape_vcard(title)))?;
@@ -243,7 +248,7 @@ fn format_categories(cats: &CategorySet) -> String {
     let mut n2_sorted: Vec<&String> = cats.n2.iter().collect();
     n2_sorted.sort();
     parts.extend(n2_sorted.into_iter().cloned());
-    format!("CATEGORIES:{}", &parts.join(","))
+    format!("CATEGORIES:{}", parts.join(","))
 }
 
 fn tel_type_to_str(t: TelType) -> &'static str {
@@ -252,7 +257,29 @@ fn tel_type_to_str(t: TelType) -> &'static str {
         TelType::Home => "home",
         TelType::Work => "work",
         TelType::Main => "main",
+        TelType::Fax => "fax",
+        TelType::Pager => "pager",
+        TelType::Text => "text",
+        TelType::Video => "video",
         TelType::Other => "other",
+    }
+}
+
+fn format_address(addr: &crate::domain::contact::Address) -> String {
+    let parts = [
+        addr.po_box.as_str(),
+        addr.extended.as_str(),
+        addr.street.as_str(),
+        addr.locality.as_str(),
+        addr.region.as_str(),
+        addr.postal_code.as_str(),
+        addr.country.as_str(),
+    ];
+    let value = parts.join(";");
+    if addr.types.is_empty() {
+        format!("ADR:{}", escape_vcard(&value))
+    } else {
+        format!("ADR;TYPE={}:{}", addr.types.join(","), escape_vcard(&value))
     }
 }
 
@@ -344,6 +371,7 @@ mod tests {
             title: None,
             role: None,
             note: None,
+            addresses: vec![],
             categories: CategorySet::default(),
             source_detail: SourceDetail::Unknown(String::new()),
             decision: ScreeningDecision::Conserved,
@@ -504,9 +532,11 @@ mod tests {
             org_raw: None,
             emails_raw: vec![],
             tels_raw: vec![],
+            addresses_raw: vec![],
             title_raw: None,
             role_raw: None,
             note_raw: None,
+            rev_raw: None,
             photo_lines: vec![],
             logo_lines: vec![],
             sound_lines: vec![],

@@ -68,11 +68,11 @@ vcf-cribador cribar contactos.vcf --config cribador.toml
 | Etapa         | Descripción                                                                                           |
 | ------------- | ----------------------------------------------------------------------------------------------------- |
 | **Parse**     | RFC 6350 §3.2 (unfold), §3.4 (escape). Propiedades agrupadas (`ITEM1.EMAIL`). Compatibilidad v3 → v4. |
-| **Normalize** | N1-N7: capitalización de nombres, extracción de títulos, cargos, partículas. T1-T4: E.164.            |
-| **Classify**  | 16 categorías N2: JUD, NOT, COL, FIS, ICAV, CRYPTO, FINTEC, AUT, EST, LOC, etc.                       |
+| **Normalize** | N1-N7: capitalización de nombres, extracción de títulos, cargos, partículas. T1-T4: E.164 + tipos T4.  |
+| **Classify**  | Taxonomía N1/N2/N3: PROF, INST, FIN, FORM, TEC, HOST, TRAN, INMO, SERV, ASOC, SALUD, etc.                |
 | **Screen**    | C2-C6: conservar por categoría. E1-E3: eliminar huérfanos, spam, email-only.                          |
 | **Dedup**     | Union-Find con cierre transitivo. Coincidencia por TEL exacto, EMAIL fuzzy, FN fuzzy.                 |
-| **Write**     | VCF 4.0 con folding 75 octetos. TSV con 11 columnas de trazabilidad. CSV/JSON export.                 |
+| **Write**     | VCF 4.0 con folding 75 octetos. ADR y tipos T4 preservados. TSV de trazabilidad. CSV/JSON export.    |
 
 ## Ejemplo real
 
@@ -98,10 +98,12 @@ Por categoría:
 ```
 src/
 ├── domain/           Reglas de negocio puras
-│   ├── contact.rs    Entidad Contact, StructuredName, CategorySet
+│   ├── contact.rs    Entidad Contact, StructuredName, CategorySet, Address
 │   ├── screening.rs  Motor de cribado C2-E3, DecisionTrace
-│   ├── classification.rs  Clasificación N1+N2 por regex
-│   ├── normalization.rs   FN/TEL/ORG normalization
+│   ├── classification.rs  Clasificación N1/N2/N3 por regex
+│   ├── normalization.rs   FN/TEL/ORG/ADR normalization
+│   ├── audit.rs           Modelo de trazas de auditoría
+│   └── verification.rs    Verificación de invariantes de dominio
 │   ├── identity.rs        Dedup Union-Find
 │   └── rules.rs           Reglas de clasificación
 ├── application/     Casos de uso

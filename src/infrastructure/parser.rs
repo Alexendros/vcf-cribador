@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use std::sync::LazyLock;
 
 use crate::domain::contact::{
-    CategorySet, Contact, SourceDetail, StructuredName, Tel, TelType, TypedValue,
+    Address, CategorySet, Contact, SourceDetail, StructuredName, Tel, TelType, TypedValue,
 };
 use crate::domain::screening::ScreeningDecision;
 use crate::error::CribaError;
@@ -24,9 +24,11 @@ pub struct ParsedVCard {
     pub org_raw: Option<String>,
     pub emails_raw: Vec<RawTypedValue>,
     pub tels_raw: Vec<RawTypedValue>,
+    pub addresses_raw: Vec<RawTypedValue>,
     pub title_raw: Option<String>,
     pub role_raw: Option<String>,
     pub note_raw: Option<String>,
+    pub rev_raw: Option<String>,
     pub photo_lines: Vec<String>,
     pub logo_lines: Vec<String>,
     pub sound_lines: Vec<String>,
@@ -83,7 +85,18 @@ impl ParsedVCard {
         let org = self.org_raw.as_deref().map(unescape);
         let title = self.title_raw.as_deref().map(unescape);
         let role = self.role_raw.as_deref().map(unescape);
-        let note = self.note_raw.as_deref().map(unescape);
+        let mut note = self.note_raw.as_deref().map(unescape);
+        if let Some(rev) = self.rev_raw.as_deref() {
+            let rev_note = format!("REV:{}", rev);
+            note = match note {
+                Some(mut n) => {
+                    n.push_str(" | ");
+                    n.push_str(&rev_note);
+                    Some(n)
+                }
+                None => Some(rev_note),
+            };
+        }
 
         let emails = self
             .emails_raw
@@ -106,6 +119,12 @@ impl ParsedVCard {
             })
             .collect();
 
+        let addresses = self
+            .addresses_raw
+            .iter()
+            .map(|raw| parse_address(&raw.value, raw.types.clone()))
+            .collect();
+
         Ok(Contact {
             uid,
             fn_value,
@@ -115,6 +134,7 @@ impl ParsedVCard {
             org_legal_form: None,
             emails,
             tels,
+            addresses,
             title,
             role,
             note,
@@ -162,6 +182,31 @@ fn split_name(s: &str) -> Vec<String> {
     }
 }
 
+fn parse_address(value: &str, types: Vec<String>) -> Address {
+    let parts: Vec<String> = value.split(';').map(|s| s.to_string()).collect();
+    let get = |idx: usize| -> String {
+        parts
+            .get(idx)
+            .cloned()
+            .unwrap_or_default()
+            .split('\n')
+            .next()
+            .unwrap_or("")
+            .to_string()
+    };
+
+    Address {
+        po_box: unescape(&get(0)),
+        extended: unescape(&get(1)),
+        street: unescape(&get(2)),
+        locality: unescape(&get(3)),
+        region: unescape(&get(4)),
+        postal_code: unescape(&get(5)),
+        country: unescape(&get(6)),
+        types,
+    }
+}
+
 fn map_tel_type(types: &[String]) -> TelType {
     for t in types {
         let lower = t.to_lowercase();
@@ -171,11 +216,23 @@ fn map_tel_type(types: &[String]) -> TelType {
         if lower == "home" || lower == "dom" {
             return TelType::Home;
         }
-        if lower == "work" || lower == "oficina" || lower == "fax" {
+        if lower == "work" || lower == "oficina" {
             return TelType::Work;
         }
         if lower == "main" || lower == "pref" {
             return TelType::Main;
+        }
+        if lower == "fax" {
+            return TelType::Fax;
+        }
+        if lower == "pager" {
+            return TelType::Pager;
+        }
+        if lower == "text" {
+            return TelType::Text;
+        }
+        if lower == "video" {
+            return TelType::Video;
         }
     }
     TelType::Other
@@ -307,6 +364,7 @@ fn build_parsed_vcard(lines: &[&str], _line_number: usize) -> Result<ParsedVCard
             "TITLE" => vcard.title_raw = Some(value_noescape),
             "ROLE" => vcard.role_raw = Some(value_noescape),
             "NOTE" => vcard.note_raw = Some(value_noescape),
+            "REV" => vcard.rev_raw = Some(value_noescape),
             "VERSION" => vcard.version = Some(value_noescape),
             "PRODID" => vcard.prodid = Some(value_noescape),
             "EMAIL" => {
@@ -325,6 +383,14 @@ fn build_parsed_vcard(lines: &[&str], _line_number: usize) -> Result<ParsedVCard
                     value: value_noescape,
                     types,
                     pref,
+                });
+            }
+            "ADR" => {
+                let types = extract_types(&prop.params);
+                vcard.addresses_raw.push(RawTypedValue {
+                    value: value_noescape,
+                    types,
+                    pref: 0,
                 });
             }
             _ => {

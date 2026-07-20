@@ -129,8 +129,89 @@ pub fn deduplicate(contacts: Vec<Contact>) -> (Vec<Contact>, usize) {
         }
     }
 
-    let result: Vec<Contact> = merged.into_iter().flatten().collect();
+    let mut result: Vec<Contact> = merged.into_iter().flatten().collect();
+
+    // ── D3-D6: candidatos a duplicado (notas, no fusión automática) ──
+    detect_candidates(&mut result);
+
     (result, fusion_count)
+}
+
+/// Detecta candidatos D3-D6 y añade propuestas en el campo NOTE.
+///
+/// - D3: mismo FN + mismo ORG
+/// - D4: mismo TEL (sin requerir FN)
+/// - D5: mismo EMAIL (sin requerir FN)
+/// - D6: FN difusa (normalizada) + TEL/EMAIL compartido
+fn detect_candidates(contacts: &mut [Contact]) {
+    let n = contacts.len();
+    for i in 0..n {
+        for j in (i + 1)..n {
+            let a = &contacts[i];
+            let b = &contacts[j];
+
+            let fn_a = normalize_for_dedup(&a.fn_value);
+            let fn_b = normalize_for_dedup(&b.fn_value);
+            let org_a = a.org.as_deref().unwrap_or("").to_lowercase();
+            let org_b = b.org.as_deref().unwrap_or("").to_lowercase();
+
+            let same_fn = fn_a == fn_b;
+            let same_org = !org_a.is_empty() && org_a == org_b;
+            let shared_tel = a
+                .tels
+                .iter()
+                .any(|ta| b.tels.iter().any(|tb| ta.value == tb.value));
+            let shared_email = a.emails.iter().any(|ea| {
+                b.emails
+                    .iter()
+                    .any(|eb| ea.value.to_lowercase() == eb.value.to_lowercase())
+            });
+
+            let mut rule: Option<&str> = None;
+
+            if same_fn && same_org {
+                rule = Some("D3");
+            } else if shared_tel && !same_fn {
+                rule = Some("D4");
+            } else if shared_email && !same_fn {
+                rule = Some("D5");
+            } else if (shared_tel || shared_email) && !same_fn {
+                // FN difusa: comparten TEL/EMAIL pero no exactamente FN
+                rule = Some("D6");
+            }
+
+            if let Some(r) = rule {
+                let proposal_a = format!("{} candidate: uid={} fn={}", r, b.uid, b.fn_value);
+                let proposal_b = format!("{} candidate: uid={} fn={}", r, a.uid, a.fn_value);
+                append_note(&mut contacts[i], &proposal_a);
+                append_note(&mut contacts[j], &proposal_b);
+            }
+        }
+    }
+}
+
+fn append_note(contact: &mut Contact, text: &str) {
+    match contact.note {
+        Some(ref mut note) => {
+            note.push_str(" | ");
+            note.push_str(text);
+        }
+        None => contact.note = Some(text.into()),
+    }
+}
+
+fn format_address_key(addr: &crate::domain::contact::Address) -> String {
+    format!(
+        "{};{};{};{};{};{};{};{}",
+        addr.po_box,
+        addr.extended,
+        addr.street,
+        addr.locality,
+        addr.region,
+        addr.postal_code,
+        addr.country,
+        addr.types.join(",")
+    )
 }
 
 fn merge_contacts(base: &mut Contact, other: Contact) {
@@ -169,6 +250,14 @@ fn merge_contacts(base: &mut Contact, other: Contact) {
     for email in other.emails {
         if seen_emails.insert(email.value.to_lowercase()) {
             base.emails.push(email);
+        }
+    }
+    // ADRs: unión dedup por valor completo
+    let mut seen_adrs: std::collections::HashSet<String> =
+        base.addresses.iter().map(format_address_key).collect();
+    for addr in other.addresses {
+        if seen_adrs.insert(format_address_key(&addr)) {
+            base.addresses.push(addr);
         }
     }
     // TITLE, ROLE: unión
@@ -228,6 +317,7 @@ mod tests {
             title: None,
             role: None,
             note: None,
+            addresses: vec![],
             categories: CategorySet::default(),
             source_detail: SourceDetail::Unknown("test".into()),
             decision: ScreeningDecision::Conserved,
