@@ -18,10 +18,11 @@ jobs:
     steps:
       - run: |
           echo "=== Runner health check ==="
-            command -v cc           && echo "✓ cc (build-essential)"  || echo "✗ cc missing"
-            command -v cargo        && echo "✓ cargo ($(cargo --version | head -1))" || echo "✗ cargo missing"
-            command -v rustup       && echo "✓ rustup"               || echo "✗ rustup missing"
-            echo "=== All systems go ==="
+          command -v cc      && echo "✓ cc (build-essential)" || echo "✗ cc missing"
+          command -v cargo   && echo "✓ cargo ($(cargo --version | head -1))" || echo "✗ cargo missing"
+          command -v rustup  && echo "✓ rustup" || echo "✗ rustup missing"
+          echo "=== All systems go ==="
+        shell: bash
 
   check:
     name: Check (stable)
