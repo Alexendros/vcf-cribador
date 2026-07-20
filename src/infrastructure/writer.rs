@@ -243,7 +243,7 @@ fn format_categories(cats: &CategorySet) -> String {
     let mut n2_sorted: Vec<&String> = cats.n2.iter().collect();
     n2_sorted.sort();
     parts.extend(n2_sorted.into_iter().cloned());
-    format!("CATEGORIES:{}", &parts.join(","))
+    format!("CATEGORIES:{}", parts.join(","))
 }
 
 fn tel_type_to_str(t: TelType) -> &'static str {
