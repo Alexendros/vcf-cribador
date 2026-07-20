@@ -20,6 +20,8 @@ struct CribadoToml {
     #[serde(default)]
     conservar_dominios: Vec<String>,
     #[serde(default)]
+    servicios_descontinuados: Vec<String>,
+    #[serde(default)]
     e2_keywords: Vec<String>,
 }
 
@@ -47,11 +49,15 @@ pub fn load_config(path: Option<&Path>) -> Result<ScreeningConfig, CribaError> {
 
         if cribado.replace {
             screening.conservar_dominios = cribado.conservar_dominios;
+            screening.servicios_descontinuados = cribado.servicios_descontinuados;
             screening.e2_keywords = cribado.e2_keywords;
         } else {
             screening
                 .conservar_dominios
                 .extend(cribado.conservar_dominios);
+            screening
+                .servicios_descontinuados
+                .extend(cribado.servicios_descontinuados);
             screening.e2_keywords.extend(cribado.e2_keywords);
         }
     }

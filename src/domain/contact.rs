@@ -19,6 +19,7 @@ pub struct Contact {
     pub title: Option<String>,
     pub role: Option<String>,
     pub note: Option<String>,
+    pub addresses: Vec<Address>,
     pub categories: CategorySet,
     pub source_detail: SourceDetail,
     pub decision: super::screening::ScreeningDecision,
@@ -50,7 +51,24 @@ pub enum TelType {
     Home,
     Work,
     Main,
+    Fax,
+    Pager,
+    Text,
+    Video,
     Other,
+}
+
+/// Dirección postal (RFC 6350 ADR).
+#[derive(Debug, Clone, Default)]
+pub struct Address {
+    pub po_box: String,
+    pub extended: String,
+    pub street: String,
+    pub locality: String,
+    pub region: String,
+    pub postal_code: String,
+    pub country: String,
+    pub types: Vec<String>,
 }
 
 /// Valor con tipos y preferencia (EMAIL, TEL sin normalizar).

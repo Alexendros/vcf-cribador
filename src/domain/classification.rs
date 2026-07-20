@@ -11,7 +11,7 @@ use crate::domain::rules::CLASSIFICATION_RULES;
 pub fn classify(contact: &Contact) -> CategorySet {
     let mut n1 = std::collections::HashSet::new();
     let mut n2 = std::collections::HashSet::new();
-    let n3 = Vec::new();
+    let mut n3 = Vec::new();
 
     let haystack = build_haystack(contact);
 
@@ -19,6 +19,7 @@ pub fn classify(contact: &Contact) -> CategorySet {
         if rule.pattern.is_match(&haystack) {
             n1.insert(rule.n1.to_string());
             n2.insert(rule.n2.to_string());
+            n3.push(rule.n3.to_string());
         }
     }
 
@@ -71,6 +72,7 @@ mod tests {
             title: None,
             role: None,
             note: None,
+            addresses: vec![],
             categories: CategorySet::default(),
             source_detail: SourceDetail::Unknown("test".into()),
             decision: ScreeningDecision::Conserved,
@@ -117,5 +119,16 @@ mod tests {
         let c = make_contact("Unknown Person", None, "x@example.com");
         let cats = classify(&c);
         assert!(cats.has_n1());
+    }
+
+    #[test]
+    fn test_n3_populated() {
+        let c = make_contact(
+            "Juzgado Instrucción 9",
+            Some("Juzgado Instrucción 9"),
+            "test@example.com",
+        );
+        let cats = classify(&c);
+        assert!(cats.n3.iter().any(|n| n == "JUD-JUZ"));
     }
 }

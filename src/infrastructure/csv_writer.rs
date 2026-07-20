@@ -16,6 +16,7 @@ pub fn export_csv(contacts: &[Contact], path: &Path) -> Result<(), CribaError> {
         "ORG",
         "TEL",
         "EMAIL",
+        "ADR",
         "CATEGORIES",
         "SOURCE",
         "CRIBADO_RESULT",
@@ -58,6 +59,18 @@ pub fn export_csv(contacts: &[Contact], path: &Path) -> Result<(), CribaError> {
             .collect::<Vec<_>>()
             .join(", ");
 
+        let addresses = c
+            .addresses
+            .iter()
+            .map(|a| {
+                format!(
+                    "{};{};{};{};{};{};{}",
+                    a.po_box, a.extended, a.street, a.locality, a.region, a.postal_code, a.country
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" | ");
+
         let categories = {
             let mut parts: Vec<&str> = Vec::new();
             for cat in &c.categories.n1 {
@@ -90,6 +103,7 @@ pub fn export_csv(contacts: &[Contact], path: &Path) -> Result<(), CribaError> {
             c.org.as_deref().unwrap_or(""),
             &tels,
             &emails,
+            &addresses,
             &categories,
             source,
             result,
@@ -131,6 +145,7 @@ mod tests {
             title: None,
             role: None,
             note: None,
+            addresses: vec![],
             categories: CategorySet::default(),
             source_detail: SourceDetail::ProtonAutosave,
             decision: ScreeningDecision::Conserved,
@@ -164,6 +179,7 @@ mod tests {
             title: None,
             role: None,
             note: None,
+            addresses: vec![],
             categories: CategorySet::default(),
             source_detail: SourceDetail::Unknown(String::new()),
             decision: ScreeningDecision::Eliminated(crate::domain::screening::ElimCode::E1),

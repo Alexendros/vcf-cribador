@@ -3,6 +3,7 @@
 use std::fs;
 use std::path::Path;
 
+use crate::domain::audit::AuditEntry;
 use crate::domain::screening::decide;
 use crate::error::CribaError;
 use crate::infrastructure::config::load_config;
@@ -53,7 +54,7 @@ pub fn execute(
 
     let config = load_config(_config)?;
 
-    let mut contacts = Vec::with_capacity(vcards.len());
+    let mut audit_entries = Vec::with_capacity(vcards.len());
     for vcard in &vcards {
         let mut adapted = vcard.clone();
         if vcard.version.as_deref() == Some("3.0") {
@@ -63,15 +64,21 @@ pub fn execute(
         contact.source_detail = source_detail.clone();
         let trace = decide(&contact, &config);
         contact.screening_rule = trace.triggered_rule.clone();
-        contact.decision = trace.outcome;
-        contacts.push(contact);
+        contact.decision = trace.outcome.clone();
+
+        let fn_original = vcard
+            .fn_raw
+            .as_deref()
+            .unwrap_or("Sin nombre")
+            .replace(['\t', '\n'], " ");
+        audit_entries.push(AuditEntry::from_contact(&contact, &fn_original, &trace));
     }
 
     let audit_path = output
         .map(|p| p.to_path_buf())
         .unwrap_or_else(|| Path::new("audit.tsv").to_path_buf());
 
-    write_audit_tsv(&vcards, &contacts, &vcard_map, &audit_path)?;
+    write_audit_tsv(&audit_entries, &audit_path)?;
 
     println!("Auditoría escrita: {}", audit_path.display());
     println!("  Contactos: {}", total);

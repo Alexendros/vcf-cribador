@@ -5,11 +5,13 @@ use std::fs;
 use std::path::Path;
 
 use crate::application::stats::Stats;
+use crate::domain::audit::AuditEntry;
 use crate::domain::classification::classify;
 use crate::domain::contact::Contact;
 use crate::domain::identity::deduplicate;
 use crate::domain::normalization::{normalize_fn, normalize_org, normalize_tel};
 use crate::domain::screening::{decide, ScreeningDecision};
+use crate::domain::verification::verify;
 use crate::error::CribaError;
 use crate::infrastructure::config::load_config;
 use crate::infrastructure::encoding::ensure_utf8;
@@ -84,6 +86,7 @@ pub fn execute(
 
     // 8. Procesar cada contacto
     let mut contacts = Vec::with_capacity(vcards.len());
+    let mut audit_entries = Vec::with_capacity(vcards.len());
     let mut eliminados = 0usize;
     let mut cuarentena = 0usize;
     let mut needs_review = 0usize;
@@ -103,15 +106,9 @@ pub fn execute(
         match &trace.outcome {
             ScreeningDecision::Eliminated(_) => {
                 eliminados += 1;
-                contact.decision = trace.outcome.clone();
-                contacts.push(contact);
-                continue;
             }
             ScreeningDecision::Quarantine(_) => {
                 cuarentena += 1;
-                contact.decision = trace.outcome.clone();
-                contacts.push(contact);
-                continue;
             }
             ScreeningDecision::NeedsReview(_) => {
                 needs_review += 1;
@@ -119,7 +116,7 @@ pub fn execute(
             ScreeningDecision::Conserved => {}
         }
 
-        contact.decision = trace.outcome;
+        contact.decision = trace.outcome.clone();
 
         // Normalización (solo conservados y needs_review)
         let (fn_normalized, title_extra, role_extra) = normalize_fn(&contact.fn_value);
@@ -132,7 +129,8 @@ pub fn execute(
         }
 
         for tel in &mut contact.tels {
-            let normalized = normalize_tel(&tel.value, &screening_config.prefijo_pais);
+            let tel_type = tel.tel_type;
+            let normalized = normalize_tel(&tel.value, &screening_config.prefijo_pais, tel_type);
             *tel = normalized;
         }
 
@@ -146,6 +144,14 @@ pub fn execute(
 
         contact.categories = classify(&contact);
 
+        let fn_original = vcard
+            .fn_raw
+            .as_deref()
+            .unwrap_or("Sin nombre")
+            .replace(['\t', '\n'], " ");
+        let audit_entry = AuditEntry::from_contact(&contact, &fn_original, &trace);
+        audit_entries.push(audit_entry);
+
         contacts.push(contact);
     }
 
@@ -153,6 +159,27 @@ pub fn execute(
 
     // 9. Deduplicación
     let (contacts, fusionados) = deduplicate(contacts);
+
+    // Actualizar entradas de auditoría para contactos fusionados
+    let mut merged_map: HashMap<String, String> = HashMap::new();
+    for c in &contacts {
+        for merged_uid in &c.merged_uids {
+            merged_map.insert(merged_uid.clone(), c.uid.clone());
+        }
+    }
+    for entry in &mut audit_entries {
+        if let Some(target) = merged_map.get(&entry.uid) {
+            *entry = entry.clone().merged_into(target);
+        }
+    }
+
+    // 10. Verificación de invariantes
+    let warnings = verify(&contacts, Some(input), output);
+    if !warnings.is_empty() {
+        for warning in &warnings {
+            tracing::warn!("{}", warning);
+        }
+    }
 
     tracing::info!(
         "Pipeline: {} entrada, {} conservados, {} eliminados, {} cuarentena, {} fusionados, {} needs_review",
@@ -175,7 +202,7 @@ pub fn execute(
             write_vcf(&contacts, &vcard_map, out_path, true)?;
         }
         if let Some(audit_path) = audit {
-            write_audit_tsv(&vcards, &contacts, &vcard_map, audit_path)?;
+            write_audit_tsv(&audit_entries, audit_path)?;
         }
     }
 

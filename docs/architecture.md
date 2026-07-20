@@ -24,14 +24,15 @@
 ├──────────────────────────────────────┤
 │  ┌────────────┐  ┌────────────────┐  │
 │  │  domain/   │  │ infrastructure/ │  │
-│  │            │  │                 │  │
-│  │ Contact    │  │ parser.rs       │  │
-│  │ Decision-  │  │ writer.rs       │  │
-│  │ Trace      │  │ encoding.rs     │  │
-│  │ classify() │  │ v3_compat.rs    │  │
-│  │ dedup()    │  │ source.rs       │  │
-│  │ decide()   │  │ config.rs       │  │
-│  │ rules      │  │ csv/json/tsv    │  │
+│  │            │  │                 │  │  │  │ Contact    │  │ parser.rs       │  │
+  │  │ Decision-  │  │ writer.rs       │  │
+  │  │ Trace      │  │ encoding.rs     │  │
+  │  │ classify() │  │ v3_compat.rs    │  │
+  │  │ dedup()    │  │ source.rs       │  │
+  │  │ decide()   │  │ config.rs       │  │
+  │  │ rules      │  │ csv/json/tsv    │  │
+  │  │ audit      │  │                 │  │
+  │  │ verify     │  │                 │  │
 │  └────────────┘  └────────────────┘  │
 └──────────────────────────────────────┘
 
@@ -64,7 +65,8 @@ Regla de dependencia:
 
 **Módulos:**
 - `domain/screening.rs` — `decide()`, `DecisionTrace`, `ScreeningDecision`
-- `domain/contact.rs` — `Contact`, `StructuredName`, `Tel`
+- `domain/contact.rs` — `Contact`, `StructuredName`, `Tel`, `Address`
+- `domain/verification.rs` — verificación de invariantes I1-I7
 - `application/cribar.rs` — `normalize_contact()`
 
 **Entrada:** `Vec<ParsedVCard>`
@@ -75,9 +77,11 @@ Regla de dependencia:
 **Responsabilidad:** Asignar categorías N1/N2/N3 mediante reglas regex. Cargar reglas desde TOML (herencia: añadir o reemplazar).
 
 **Módulos:**
-- `domain/rules.rs` — `ClassificationRule`, reglas estándar
+- `domain/rules.rs` — `ClassificationRule`, reglas estándar con N1/N2/N3
 - `domain/classification.rs` — `classify()`, `CategorySet`
 - `infrastructure/config.rs` — carga de `cribador.toml`
+
+La taxonomía cubre profesionales jurídicos, instituciones públicas, finanzas (incl. crypto/fintech), educación, tecnología, comercio y servicios.
 
 **Entrada:** `Vec<Contact>` + `Option<Config>`
 **Salida:** `Vec<Contact>` con `categories` poblado
@@ -170,6 +174,8 @@ application::cribar
 domain::screening → domain::contact, domain::rules
 domain::classification → domain::rules
 domain::identity → domain::contact
+domain::audit → domain::contact, domain::screening
+domain::verification → domain::contact, domain::screening
 domain::contact → (sin dependencias)
 domain::rules → regex (crate externa, sin lógica de negocio)
 

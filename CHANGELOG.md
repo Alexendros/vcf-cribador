@@ -7,6 +7,14 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Añadido
+- Taxonomía de clasificación ampliada a tres niveles (N1/N2/N3) con catágorias de profesiones, instituciones, finanzas, educación, tecnología, comercio y servicios.
+- Soporte completo para tipos de teléfono T4 (`cell`, `home`, `work`, `main`, `fax`, `pager`, `text`, `video`, `other`) con mapeo desde vCard y preservación en salida.
+- Soporte para propiedades ADR (direcciones postales) en parser, entidad `Contact`, writer VCF y exportaciones CSV/JSON/TSV.
+- Regla E3 de huérfanos actualizada para considerar también direcciones postales.
+- Nuevos módulos de dominio: `audit.rs` para trazas de auditoría y `verification.rs` para verificación de invariantes.
+- Tests unitarios y de integración ampliados; 130 tests + 10 de integración pasando.
+
 ## [0.1.0] - 2025-07-07
 
 ### Añadido
