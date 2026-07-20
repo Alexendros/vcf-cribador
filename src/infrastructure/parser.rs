@@ -234,7 +234,7 @@ pub fn unescape(value: &str) -> String {
     out
 }
 
-/// Parsea un string VCF (ya desplegado y transcodificado) en Vec<ParsedVCard>.
+/// Parsea un string VCF (ya desplegado y transcodificado) en `Vec<ParsedVCard>`.
 pub fn parse_vcards(input: &str) -> Result<Vec<ParsedVCard>, CribaError> {
     let lines: Vec<&str> = input.lines().collect();
     let mut vcards = Vec::new();
