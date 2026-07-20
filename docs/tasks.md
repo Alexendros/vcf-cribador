@@ -9,7 +9,8 @@ Este documento enumera las tareas completadas, en curso y pendientes del proyect
 - Fase 2 — Screening y normalización ✅
 - Fase 3 — Clasificación + Writer VCF ✅
 - Fase 4 — Taxonomía N3, tipos T4 y ADR ✅
-- Fases 5-7 — Pipeline completo, configuración TOML y release 🔄
+- Fase 5 — Pipeline completo y configuración TOML ✅
+- Fases 6-7 — Testing, calidad y release 🔄
 
 ## Fase 4 completada
 
@@ -26,12 +27,26 @@ Este documento enumera las tareas completadas, en curso y pendientes del proyect
 - [x] Ajustar todos los literales `Contact` en tests y producción.
 - [x] Pasar `cargo test`, `cargo clippy -- -D warnings` y `cargo fmt --check`.
 
+## Fase 5 completada
+
+- [x] Conectar todas las etapas del pipeline en `application/cribar.rs`.
+  - [x] Screen previo a normalización y clasificación.
+  - [x] Normalizar y clasificar solo contactos activos (`Conserved` / `NeedsReview`).
+  - [x] Deduplicar únicamente contactos activos.
+  - [x] Actualizar entradas de auditoría tras fusiones.
+  - [x] Recalcular métricas finales tras deduplicación.
+- [x] Completar configuración TOML en `infrastructure/config.rs`.
+  - [x] `AppConfig` con `screening` y `classification_rules`.
+  - [x] Herencia append/replace para configuración de cribado.
+  - [x] Reglas de clasificación personalizadas vía TOML.
+  - [x] Tests unitarios para reglas personalizadas.
+- [x] Actualizar `README.md` con ejemplo de `[clasificacion]`.
+- [x] Actualizar `CHANGELOG.md` con cambios de la Fase 5.
+
 ## En curso / pendientes inmediatos
 
-- [ ] Actualizar `docs/architecture.md` y `README.md` con ADR, T4 y taxonomía N3.
-- [ ] Completar pipeline en `application/cribar.rs` si quedan stubs por resolver.
-- [ ] Implementar configuración TOML completa (`infrastructure/config.rs`).
-- [ ] Añadir tests de integración con fixtures reales.
+- [ ] Actualizar `docs/architecture.md` y `docs/roadmap.md` con Fase 5 completada.
+- [ ] Añadir tests de integración con fixtures reales para el pipeline completo.
 - [ ] Release v0.1.0.
 
 ## Backlog técnico

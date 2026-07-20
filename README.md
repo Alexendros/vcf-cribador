@@ -50,6 +50,14 @@ e2_keywords = [              # palabras clave adicionales para detección de spa
     "pharma",
     "jackpot"
 ]
+
+[clasificacion]
+replace = false              # false = añade a las reglas por defecto, true = reemplaza
+[[clasificacion.reglas]]
+regex = "(?i)rob[óo]tica|maker"
+n1 = "TEC"
+n2 = "TEC-HW"
+n3 = "HW-MAKER"
 ```
 
 ```bash

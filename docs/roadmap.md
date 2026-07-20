@@ -29,12 +29,17 @@ Hoja de ruta del proyecto, ordenada por fases de implementación y prioridad.
 - Soporte de direcciones postales ADR.
 - Regla E3 considera direcciones.
 
-## Fase 5 — Pipeline completo y configuración (actual)
+## Fase 5 — Pipeline completo y configuración ✅
 - Conectar todas las etapas en `application/cribar.rs`.
+  - Screen → normalización/clasificación solo activos.
+  - Deduplicación solo sobre activos.
+  - Recombinación y recálculo de métricas.
 - Configuración externa TOML con herencia/append y replace.
+  - Sección `[cribado]` para ajustes de screening.
+  - Sección `[clasificacion]` para reglas de clasificación personalizadas.
 - Validación de invariantes con `domain::verification`.
 
-## Fase 6 — Testing y calidad
+## Fase 6 — Testing y calidad (actual)
 - Ampliar tests de integración con fixtures reales.
 - Alcanzar ≥80 % de cobertura unitaria.
 - Integrar `cargo audit` en CI.

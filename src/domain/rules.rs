@@ -6,9 +6,9 @@ use std::sync::LazyLock;
 #[derive(Debug, Clone)]
 pub struct ClassificationRule {
     pub pattern: Regex,
-    pub n1: &'static str,
-    pub n2: &'static str,
-    pub n3: &'static str,
+    pub n1: String,
+    pub n2: String,
+    pub n3: String,
 }
 
 pub static CLASSIFICATION_RULES: LazyLock<Vec<ClassificationRule>> = LazyLock::new(|| {
@@ -172,11 +172,11 @@ pub static CLASSIFICATION_RULES: LazyLock<Vec<ClassificationRule>> = LazyLock::n
     ]
 });
 
-fn rule(pattern: &str, n1: &'static str, n2: &'static str, n3: &'static str) -> ClassificationRule {
+fn rule(pattern: &str, n1: &str, n2: &str, n3: &str) -> ClassificationRule {
     ClassificationRule {
         pattern: Regex::new(pattern).expect("regex de clasificación inválida"),
-        n1,
-        n2,
-        n3,
+        n1: n1.to_string(),
+        n2: n2.to_string(),
+        n3: n3.to_string(),
     }
 }

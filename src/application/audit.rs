@@ -52,7 +52,7 @@ pub fn execute(
         crate::infrastructure::source::detect_source(&prodids, &uids)
     };
 
-    let config = load_config(_config)?;
+    let app_config = load_config(_config)?;
 
     let mut audit_entries = Vec::with_capacity(vcards.len());
     for vcard in &vcards {
@@ -62,7 +62,7 @@ pub fn execute(
         }
         let mut contact = adapted.to_contact()?;
         contact.source_detail = source_detail.clone();
-        let trace = decide(&contact, &config);
+        let trace = decide(&contact, &app_config.screening);
         contact.screening_rule = trace.triggered_rule.clone();
         contact.decision = trace.outcome.clone();
 

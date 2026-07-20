@@ -15,6 +15,15 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Nuevos módulos de dominio: `audit.rs` para trazas de auditoría y `verification.rs` para verificación de invariantes.
 - Tests unitarios y de integración ampliados; 130 tests + 10 de integración pasando.
 
+### Cambiado
+- Pipeline de `application/cribar.rs` reorganizado para normalizar y clasificar únicamente contactos activos (`Conserved` / `NeedsReview`).
+- Deduplicación aplicada solo sobre contactos activos; los inactivos se auditan sin mezclarse en el paso de fusión.
+- `infrastructure/config.rs` ahora expone `AppConfig` con `screening` y `classification_rules`, permitiendo reglas de clasificación personalizadas en TOML.
+
+### Añadido (Fase 5)
+- Carga de reglas de clasificación personalizadas desde `cribador.toml` con herencia (append) o reemplazo (replace).
+- Soporte completo de configuración TOML para cribado y taxonomía.
+
 ## [0.1.0] - 2025-07-07
 
 ### Añadido

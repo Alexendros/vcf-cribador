@@ -82,14 +82,15 @@ pub fn execute(
     };
 
     // 7. Cargar configuración
-    let screening_config = load_config(config)?;
+    let app_config = load_config(config)?;
+    let screening_config = &app_config.screening;
 
     // 8. Procesar cada contacto
-    let mut contacts = Vec::with_capacity(vcards.len());
+    let mut active_contacts: Vec<Contact> = Vec::with_capacity(vcards.len());
+    let mut inactive_contacts: Vec<Contact> = Vec::with_capacity(vcards.len());
     let mut audit_entries = Vec::with_capacity(vcards.len());
     let mut eliminados = 0usize;
     let mut cuarentena = 0usize;
-    let mut needs_review = 0usize;
 
     for vcard in &vcards {
         let mut adapted = vcard.clone();
@@ -100,69 +101,75 @@ pub fn execute(
         let mut contact = adapted.to_contact()?;
         contact.source_detail = source_detail.clone();
 
-        let trace = decide(&contact, &screening_config);
+        let trace = decide(&contact, screening_config);
         contact.screening_rule = trace.triggered_rule.clone();
-
-        match &trace.outcome {
-            ScreeningDecision::Eliminated(_) => {
-                eliminados += 1;
-            }
-            ScreeningDecision::Quarantine(_) => {
-                cuarentena += 1;
-            }
-            ScreeningDecision::NeedsReview(_) => {
-                needs_review += 1;
-            }
-            ScreeningDecision::Conserved => {}
-        }
-
         contact.decision = trace.outcome.clone();
 
-        // Normalización (solo conservados y needs_review)
-        let (fn_normalized, title_extra, role_extra) = normalize_fn(&contact.fn_value);
-        contact.fn_value = fn_normalized;
-        if title_extra.is_some() && contact.title.is_none() {
-            contact.title = title_extra;
-        }
-        if role_extra.is_some() && contact.role.is_none() {
-            contact.role = role_extra;
-        }
+        let is_active = matches!(
+            contact.decision,
+            ScreeningDecision::Conserved | ScreeningDecision::NeedsReview(_)
+        );
 
-        for tel in &mut contact.tels {
-            let tel_type = tel.tel_type;
-            let normalized = normalize_tel(&tel.value, &screening_config.prefijo_pais, tel_type);
-            *tel = normalized;
-        }
-
-        if let Some(ref org) = contact.org {
-            let (org_clean, legal_form) = normalize_org(org);
-            contact.org = Some(org_clean);
-            if contact.org_legal_form.is_none() {
-                contact.org_legal_form = legal_form;
+        if is_active {
+            // Normalización (solo conservados y needs_review)
+            let (fn_normalized, title_extra, role_extra) = normalize_fn(&contact.fn_value);
+            contact.fn_value = fn_normalized;
+            if title_extra.is_some() && contact.title.is_none() {
+                contact.title = title_extra;
             }
-        }
+            if role_extra.is_some() && contact.role.is_none() {
+                contact.role = role_extra;
+            }
 
-        contact.categories = classify(&contact);
+            for tel in &mut contact.tels {
+                let tel_type = tel.tel_type;
+                let normalized =
+                    normalize_tel(&tel.value, &screening_config.prefijo_pais, tel_type);
+                *tel = normalized;
+            }
+
+            if let Some(ref org) = contact.org {
+                let (org_clean, legal_form) = normalize_org(org);
+                contact.org = Some(org_clean);
+                if contact.org_legal_form.is_none() {
+                    contact.org_legal_form = legal_form;
+                }
+            }
+
+            contact.categories = classify(&contact, &app_config.classification_rules);
+
+            active_contacts.push(contact);
+        } else {
+            match &contact.decision {
+                ScreeningDecision::Eliminated(_) => eliminados += 1,
+                ScreeningDecision::Quarantine(_) => cuarentena += 1,
+                _ => {}
+            }
+
+            inactive_contacts.push(contact);
+        }
 
         let fn_original = vcard
             .fn_raw
             .as_deref()
             .unwrap_or("Sin nombre")
             .replace(['\t', '\n'], " ");
-        let audit_entry = AuditEntry::from_contact(&contact, &fn_original, &trace);
+        // Reconstruimos el contacto para la auditoría con el estado final.
+        let contact_for_audit = if is_active {
+            active_contacts.last().unwrap().clone()
+        } else {
+            inactive_contacts.last().unwrap().clone()
+        };
+        let audit_entry = AuditEntry::from_contact(&contact_for_audit, &fn_original, &trace);
         audit_entries.push(audit_entry);
-
-        contacts.push(contact);
     }
 
-    let conservados = contacts.len() - eliminados - cuarentena;
-
-    // 9. Deduplicación
-    let (contacts, fusionados) = deduplicate(contacts);
+    // 9. Deduplicación solo de contactos activos
+    let (active_contacts, fusionados) = deduplicate(active_contacts);
 
     // Actualizar entradas de auditoría para contactos fusionados
     let mut merged_map: HashMap<String, String> = HashMap::new();
-    for c in &contacts {
+    for c in &active_contacts {
         for merged_uid in &c.merged_uids {
             merged_map.insert(merged_uid.clone(), c.uid.clone());
         }
@@ -172,6 +179,21 @@ pub fn execute(
             *entry = entry.clone().merged_into(target);
         }
     }
+
+    // Recombinar activos e inactivos para salida y verificación
+    let mut contacts = Vec::with_capacity(active_contacts.len() + inactive_contacts.len());
+    contacts.extend(active_contacts);
+    contacts.extend(inactive_contacts);
+
+    // Recalcular métricas finales a partir de la lista consolidada
+    let conservados = contacts
+        .iter()
+        .filter(|c| matches!(c.decision, ScreeningDecision::Conserved))
+        .count();
+    let needs_review = contacts
+        .iter()
+        .filter(|c| matches!(c.decision, ScreeningDecision::NeedsReview(_)))
+        .count();
 
     // 10. Verificación de invariantes
     let warnings = verify(&contacts, Some(input), output);
@@ -195,6 +217,12 @@ pub fn execute(
         cuarentena,
         needs_review,
     );
+
+    // Ordenar contactos para que los activos aparezcan primero en el VCF
+    contacts.sort_by_key(|c| match c.decision {
+        ScreeningDecision::Conserved | ScreeningDecision::NeedsReview(_) => 0,
+        _ => 1,
+    });
 
     // 10. Salida
     if !dry_run {
