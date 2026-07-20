@@ -12,8 +12,20 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
+  health:
+    name: Health Check
+    runs-on: [self-hosted, ts]
+    steps:
+      - run: |
+          echo "=== Runner health check ==="
+            command -v cc           && echo "✓ cc (build-essential)"  || echo "✗ cc missing"
+            command -v cargo        && echo "✓ cargo ($(cargo --version | head -1))" || echo "✗ cargo missing"
+            command -v rustup       && echo "✓ rustup"               || echo "✗ rustup missing"
+            echo "=== All systems go ==="
+
   check:
     name: Check (stable)
+    needs: [health]
     runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
@@ -23,6 +35,7 @@ jobs:
 
   msrv:
     name: Check (MSRV 1.80)
+    needs: [health]
     runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
@@ -32,6 +45,7 @@ jobs:
 
   fmt:
     name: Format
+    needs: [health]
     runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
@@ -42,6 +56,7 @@ jobs:
 
   clippy:
     name: Clippy
+    needs: [check]
     runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
@@ -53,6 +68,7 @@ jobs:
 
   test:
     name: Test
+    needs: [check]
     runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
@@ -62,6 +78,7 @@ jobs:
 
   doc:
     name: Doc
+    needs: [check]
     runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7
@@ -71,6 +88,7 @@ jobs:
 
   coverage:
     name: Coverage
+    needs: [test]
     runs-on: [self-hosted, ts]
     steps:
       - uses: actions/checkout@v7

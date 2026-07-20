@@ -11,6 +11,8 @@ updates:
     labels:
       - dependencies
       - automated
+    reviewers:
+      - Alexendros
     ignore:
       # Breaking changes — evaluar al subir MSRV
       - dependency-name: nom
@@ -39,6 +41,8 @@ updates:
     labels:
       - dependencies
       - ci
+    reviewers:
+      - Alexendros
     ignore:
       # MSRV debe quedarse en 1.80 — ni siquiera patch
       - dependency-name: dtolnay/rust-toolchain
