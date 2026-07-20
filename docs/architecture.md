@@ -14,6 +14,26 @@
 
 ---
 
+## CI/CD
+
+El proyecto usa **GitHub Actions** con **runners self-hosted** (`[self-hosted, ts]`).
+
+| Workflow          | Trigger                    | Jobs                                     |
+| ----------------- | -------------------------- | ---------------------------------------- |
+| `ci.yml`          | push/PR a `main`           | Check (stable), MSRV, Format, Clippy, Test, Doc, Coverage |
+| `audit.yml`       | Schedule lunes 08:00 UTC   | cargo audit                              |
+| `release.yml`     | Tag `v*`                   | Build + Package + Publish to crates.io   |
+
+**Branch protection:** `main` requiere:
+- Todos los checks CI verdes
+- 1 approving review + code owner
+- Linear history (no merge commits)
+- Sin pushes directos
+
+→ Ver [`docs/tasks.md`](docs/tasks.md) para el roadmap de CI.
+
+---
+
 ## Capas
 
 ```

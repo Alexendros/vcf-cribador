@@ -40,9 +40,9 @@ updates:
       - dependencies
       - ci
     ignore:
-      # MSRV debe quedarse en 1.80
+      # MSRV debe quedarse en 1.80 — ni siquiera patch
       - dependency-name: dtolnay/rust-toolchain
-        versions: [">=1.100"]
+        versions: [">=1.81"]
     groups:
       actions:
         patterns:

@@ -6,6 +6,7 @@
 [![Crates.io](https://img.shields.io/crates/v/vcf-cribador?color=orange)](https://crates.io/crates/vcf-cribador)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
 [![MSRV](https://img.shields.io/badge/rustc-1.80+-blue.svg)](https://blog.rust-lang.org/2024/07/25/Rust-1.80.0.html)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 Criba, normaliza, clasifica y deduplica contactos VCF exportados desde ProtonMail, Google Contacts o Apple iCloud.
 
@@ -129,7 +130,8 @@ src/
 | -------------------------------------------------------------- | ---------------------------------------------------- |
 | [`docs/spec.md`](docs/spec.md)                                 | Especificación, invariantes, criterios de aceptación |
 | [`docs/domain.md`](docs/domain.md)                             | Lenguaje ubicuo, entidades, rules                    |
-| [`docs/architecture.md`](docs/architecture.md)                 | Clean Architecture, capas                            |
+| [`docs/architecture.md`](docs/architecture.md)                 | Clean Architecture, CI/CD, capas                     |
+| [`docs/tasks.md`](docs/tasks.md)                               | Tareas, roadmap, estado del proyecto                 |
 | [`docs/implementation-guide.md`](docs/implementation-guide.md) | Guía de implementación por fases                     |
 | [`docs/test-plan.md`](docs/test-plan.md)                       | Estrategia de testing, fixtures                      |
 | [`docs/events.md`](docs/events.md)                             | Comandos, eventos                                    |
